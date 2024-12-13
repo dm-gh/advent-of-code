@@ -652,6 +652,54 @@ result;
 
 // 12.2
 
+const field = document.body.innerText
+  .slice(0, -1)
+  .split('\n')
+  .map(line => line.split(''))
+const key = (y, x) => `${y}_${x}`
+const visitedNodes = new Set();
+const fieldH = field.length;
+const fieldW = field[0].length;
+let result = 0;
+for (let i = 0; i < fieldH; i++) {
+  for (let j = 0; j < fieldW; j++) {
+    if (visitedNodes.has(key(i, j))) continue;
+    const letter = field[i][j];
+    const blob = (function collectBlob(blobAcc, [y, x]) {
+      visitedNodes.add(key(y, x));
+      blobAcc.area++;
+      for (let ii = -1, jj = 0, o = 0; o < 4;  [ii, jj] = [ii === 0 ? jj : 0, jj === 0 ? -ii : 0], o++) {
+        const iii = y + ii;
+        const jjj = x + jj;
+        if (iii < 0 || iii >= fieldH || jjj < 0 || jjj >= fieldW || field[iii][jjj] !== blobAcc.letter) {
+          const dir = key(ii, jj);
+          if (!blobAcc.sides.has(dir)) blobAcc.sides.set(dir, new Map());
+          const dirMap = blobAcc.sides.get(dir);
+          const [k, v] = ii === 0 ? [jjj, iii] : [iii, jjj];
+          if (!dirMap.has(k)) dirMap.set(k, new Set());
+          dirMap.get(k).add(v);
+        } else if(!visitedNodes.has(key(iii, jjj))) {
+          collectBlob(blobAcc, [iii, jjj]);
+        }
+      }
+      return blobAcc;
+    })({ letter, area: 0, sides: new Map() }, [i, j]);
+    let sides = 0;
+    for (let map of blob.sides.values()) {
+      for (let set of map.values()) {
+        const arr = Array.from(set).toSorted((a, b) => a - b);
+        sides++;
+        let lastN = arr[0];
+        for (let n of arr) {
+          if (n - lastN > 1) sides++;
+          lastN = n;
+        }
+      }
+    }
+    result += blob.area * sides;
+  }
+}
+result;
 
 // 13.1
 
