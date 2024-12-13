@@ -1,4 +1,5 @@
 // 1.1
+
 const [as, bs] = document.body.innerText
   .split('\n')
   .map(pair => pair.split(/\s+/).map(Number))
@@ -7,8 +8,8 @@ const [as, bs] = document.body.innerText
   .map(arr => arr.toSorted());
 const res = as.map((a, i) => Math.abs(a - bs[i]))
   .reduce((a, b) => a + b, 0)
-
 res;
+
 // 1.2
 
 const [as, bs] = document.body.innerText
@@ -18,7 +19,6 @@ const [as, bs] = document.body.innerText
   .reduce(([as, bs], [a, b]) => [[...as, a], [...bs, b]], [[], []]);
 const res = as.map(a => bs.filter(b => a === b).length * a)
   .reduce((a, b) => a + b, 0)
-
 res;
 
 // 2.1
@@ -40,7 +40,6 @@ const opOnArr = op => arr => arr.length <= 1 || (op(arr[0], arr[1]) && opOnArr(o
 const isSorted = arr => isSortedAsc(arr) || isSortedDesc(arr)
 const isSortedAsc = opOnArr((a, b) => a > b && a - b <= 3)
 const isSortedDesc = opOnArr((a, b) => a < b && b - a <= 3)
-
 document.body.innerText
   .split('\n')
   .map(arr => arr.split(/\s+/).map(Number))
@@ -616,3 +615,82 @@ const getNumOfArrChildren = (numbers, iterations) => {
   return answer;
 }
 getNumOfArrChildren(numbers, 75)
+
+// 12.1
+
+const field = document.body.innerText
+  .slice(0, -1)
+  .split('\n')
+  .map(line => line.split(''))
+const key = (y, x) => `${y}_${x}`
+const visitedNodes = new Set();
+const fieldH = field.length;
+const fieldW = field[0].length;
+let result = 0;
+for (let i = 0; i < fieldH; i++) {
+  for (let j = 0; j < fieldW; j++) {
+    if (visitedNodes.has(key(i, j))) continue;
+    const letter = field[i][j];
+    const blob = (function collectBlob(blobAcc, [y, x]) {
+      visitedNodes.add(key(y, x));
+      blobAcc.area++;
+      for (let ii = -1, jj = 0, o = 0; o < 4;  [ii, jj] = [ii === 0 ? jj : 0, jj === 0 ? -ii : 0], o++) {
+        const iii = y + ii;
+        const jjj = x + jj;
+        if (iii < 0 || iii >= fieldH || jjj < 0 || jjj >= fieldW || field[iii][jjj] !== blobAcc.letter) {
+          blobAcc.perimeter++;
+        } else if(!visitedNodes.has(key(iii, jjj))) {
+          collectBlob(blobAcc, [iii, jjj]);
+        }
+      }
+      return blobAcc;
+    })({ letter, area: 0, perimeter: 0 }, [i, j]);
+    result += blob.area * blob.perimeter;
+  }
+}
+result;
+
+// 12.2
+
+
+// 13.1
+
+const text = document.body.innerText;
+const machines = Array.from(text.matchAll(/Button A: X\+(\d+), Y\+(\d+)\nButton B: X\+(\d+), Y\+(\d+)\nPrize: X=(\d+), Y=(\d+)\n/gm));
+const det2x2 = (a11, a12, a21, a22) => a11 * a22 - a12 * a21;
+const inv2x2 = (a11, a12, a21, a22) => [a22, -a12, -a21, a11].map(a => a / det2x2(a11, a12, a21, a22));
+const mul2x2ByVec = (a11, a12, a21, a22, b1, b2) => [a11 * b1 + a12 * b2, a21 * b1 + a22 * b2];
+const toInt = n => Math.round(n);
+const isInt = n => Math.abs(toInt(n) - n) < 0.0000001;
+
+let count = 0;
+for (let machine of machines) {
+  const [, ...coords] = machine;
+  const [ax, ay, bx, by, px, py] = coords.map(Number);
+  const [x, y] = mul2x2ByVec(...inv2x2(ax, bx, ay, by), px, py);
+  if (isInt(x) && isInt(y)) {
+    count += 3 * toInt(x) + toInt(y);
+  }
+}
+count;
+
+// 13.2
+
+const text = document.body.innerText;
+const machines = Array.from(text.matchAll(/Button A: X\+(\d+), Y\+(\d+)\nButton B: X\+(\d+), Y\+(\d+)\nPrize: X=(\d+), Y=(\d+)\n/gm));
+const det2x2 = (a11, a12, a21, a22) => a11 * a22 - a12 * a21;
+const inv2x2 = (a11, a12, a21, a22) => [a22, -a12, -a21, a11].map(a => a / det2x2(a11, a12, a21, a22));
+const mul2x2ByVec = (a11, a12, a21, a22, b1, b2) => [a11 * b1 + a12 * b2, a21 * b1 + a22 * b2];
+const toInt = n => Math.round(n);
+const isInt = n => Math.abs(toInt(n) - n) < 0.0001;
+
+let count = 0;
+for (let machine of machines) {
+  const [, ...coords] = machine;
+  const [ax, ay, bx, by, px, py] = coords.map(Number);
+  const [x, y] = mul2x2ByVec(...inv2x2(ax, bx, ay, by), px + 10000000000000, py + 10000000000000);
+  if (isInt(x) && isInt(y)) {
+    count += 3 * toInt(x) + toInt(y);
+  }
+}
+count;
